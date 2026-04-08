@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Seat Selection</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #141414;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .screen {
+            width: 100%;
+            height: 30px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            line-height: 30px;
+            margin-bottom: 10px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            overflow: hidden;
+        }
+
+        .seat-map {
+            display: grid;
+            grid-template-columns: repeat(21, 40px);
+            grid-template-rows: repeat(15, 40px);
+            gap: 2px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #eee;
+            width: auto;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .seat {
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            border-radius: 2px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #666;
+            box-sizing: border-box;
+        }
+
+        .seat:hover {
+            transform: scale(1.05);
+        }
+
+        .seat.available:hover {
+            background-color: #e0f2e0;
+            border-color: #a5d6a5;
+        }
+
+        .seat.booked {
+            background-color: #ef9a9a;
+            border-color: #e57373;
+            cursor: default;
+        }
+
+        .seat.selected {
+            background-color: #4caf50;
+            border-color: #43a047;
+            color: #fff;
+        }
+
+        #selected-seats {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            width: fit-content;
+            margin: 20px auto;
+        }
+
+        #selected-seats h2 {
+            margin-top: 0;
+            color: #333;
+            text-align: center;
+        }
+
+        #selected-seats-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        #selected-seats-list li {
+            margin-bottom: 5px;
+            color: #555;
+            text-align: center;
+        }
+
+        #ticket-counter {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #333;
+            text-align: center;
+        }
+
+        .row-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #555;
+            margin-right: 8px;
+            width: 80px;
+            height: 40px;
+            grid-column: span 2;
+            text-align: center;
+        }
+
+        #ticket-page-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #ticket-page-button:hover {
+            background-color: #43a047;
+        }
+
+        #ticket-page-button:disabled {
+            background-color: #ccc;
+            cursor: default;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Seat Selection</h1>
+
+        <div class="screen">Screen</div>
+        <div class="seat-map" id="seat-map"></div>
+
+        <div id="selected-seats">
+            <h2>Selected Seats:</h2>
+            <ul id="selected-seats-list"></ul>
+            <div id="ticket-counter">Number of Tickets: 0</div>
+        </div>
+
+        <button id="ticket-page-button" disabled>Book Selected Seats</button>
+    </div>
+
+    <script>
+        const seatMap = document.getElementById('seat-map');
+        const selectedSeatsList = document.getElementById('selected-seats-list');
+        const ticketCounter = document.getElementById('ticket-counter');
+        const ticketPageButton = document.getElementById('ticket-page-button');
+        let selectedSeats = [];
+
+        const seatLevels = {
+            "VIP": ["A", "B", "C"],
+            "Standard": ["D", "E", "F", "G", "H"],
+            "Economy": ["I", "J", "K", "L", "M", "N", "O"]
+        };
+
+        const seatData = {
+            rows: Array.from({ length: 15 }, (_, i) => String.fromCharCode(65 + i)),
+            cols: 20,
+            bookedSeats: ['B3', 'C5', 'F2', 'G8', 'H1', 'A1', 'B2', 'M19', 'N5', 'O12']
+        };
+
+        const ticketPrices = {
+            "Monday": 170, "Tuesday": 170, "Wednesday": 0, "Thursday": 220, "Friday": 300, "Saturday": 300, "Sunday": 320
+        };
+
+        let selectedDay = localStorage.getItem('selectedDay');
+        let pricePerTicket = ticketPrices[selectedDay] || 0;
+
+        function getSeatLevel(row) {
+            for (const [level, rows] of Object.entries(seatLevels)) {
+                if (rows.includes(row)) {
+                    return level;
+                }
+            }
+            return null;
+        }
+
+        function createSeatMap() {
+            seatMap.innerHTML = "";
+
+            for (let row of seatData.rows) {
+                const rowLabel = document.createElement('div');
+                rowLabel.classList.add('row-label');
+                rowLabel.textContent = `${row} (${getSeatLevel(row)})`;
+                seatMap.appendChild(rowLabel);
+
+                for (let col = 1; col <= seatData.cols; col++) {
+                    const seat = document.createElement('div');
+                    seat.classList.add('seat', 'available');
+                    seat.dataset.row = row;
+                    seat.dataset.col = col;
+                    seat.dataset.seatId = `${row}${col}`;
+                    seat.dataset.level = getSeatLevel(row);
+
+                    if (seatData.bookedSeats.includes(seat.dataset.seatId)) {
+                        seat.classList.remove('available');
+                        seat.classList.add('booked');
+                    }
+
+                    seat.addEventListener('click', toggleSeat);
+                    seatMap.appendChild(seat);
+                }
+            }
+        }
+
+        function toggleSeat(event) {
+            const seat = event.target;
+            if (seat.classList.contains('booked')) return;
+
+            const seatId = seat.dataset.seatId;
+
+            if (seat.classList.contains('selected')) {
+                seat.classList.remove('selected');
+                selectedSeats = selectedSeats.filter(s => s !== seatId);
+            } else {
+                seat.classList.add('selected');
+                selectedSeats.push(seatId);
+            }
+
+            updateSelectedSeatsList();
+        }
+
+        function updateSelectedSeatsList() {
+            selectedSeatsList.innerHTML = '';
+            selectedSeats.forEach(seatId => {
+                const listItem = document.createElement('li');
+                listItem.textContent = seatId;
+                selectedSeatsList.appendChild(listItem);
+            });
+
+            const totalTickets = selectedSeats.length;
+            const totalCost = totalTickets * pricePerTicket;
+
+            ticketCounter.textContent = `Number of Tickets: ${totalTickets} | Total Cost: Rs. ${totalCost}`;
+            ticketPageButton.disabled = totalTickets === 0;
+        }
+
+        ticketPageButton.addEventListener('click', () => {
+            const totalTickets = selectedSeats.length;
+            const totalCost = totalTickets * pricePerTicket;
+            localStorage.setItem('selectedSeats', JSON.stringify(selectedSeats));
+            localStorage.setItem('totalCost', totalCost);
+            window.location.href = 'ticket.html';
+        });
+
+        createSeatMap();
+        
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Web Page Footer Line</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    footer {
+      margin-top: auto;
+      background-color: #141212;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .word-line {
+      display: flex;
+      justify-content: space-around;
+      font-size: 18px;
+      margin: 10px 0;
+    }
+
+    .color-dots {
+      display: flex;
+      justify-content: center;
+      margin-top: 5px;
+    }
+
+    .dot {
+      height: 12px;
+      width: 12px;
+      border-radius: 50%;
+      margin: 0 5px;
+    }
+
+    .red-dot {
+            background-color: #ef9a9a;
+    }
+
+    .blue-dot {
+        background-color: #4caf50;
+    }
+  </style>
+</head>
+<body>
+
+  <footer>
+    <div class="word-line">
+      <span>Booked Seats       ....  Vacant Seats</span>
+    </div>
+    <div class="color-dots">
+      <div class="dot red-dot"></div>
+      <div class="dot blue-dot"></div>
+    </div>
+  </footer>
+
+</body>
+</html>
+

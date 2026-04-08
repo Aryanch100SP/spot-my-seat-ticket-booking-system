@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subscription Page | Spot My Seat</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+
+  <style>
+    /* Global Styling */
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f0f8ff;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Header Section */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #333;
+      padding: 1rem 2rem;
+      color: white;
+    }
+
+    header .logo {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+    }
+
+    nav ul li {
+      margin: 0 15px;
+    }
+
+    nav ul li a {
+      color: white;
+      text-decoration: none;
+    }
+
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(45deg, #28a745, #007bff);
+      color: white;
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+
+    .hero-content h1 {
+      font-size: 2.5rem;
+      font-weight: bold;
+    }
+
+    /* Plan Card Styling */
+    .plan-card {
+      background: white;
+      border: 2px solid #28a745;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 100%;
+      min-height: 300px;
+      margin-top: 20px;
+    }
+
+    .plan-card:hover {
+      transform: scale(1.05);
+      transition: transform 0.2s;
+    }
+
+    .plan-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #28a745;
+      margin-bottom: 10px;
+    }
+
+    .plan-features {
+      list-style: none;
+      padding: 0;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
+    .plan-price {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 15px 0;
+    }
+
+    /* QR Code Section */
+    .qr-container {
+      margin-top: 30px;
+      display: none;
+    }
+
+    /* Footer */
+    footer {
+      background-color: #333;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header Section -->
+  <header>
+    <div class="logo">Spot My Seat</div>
+    <nav>
+      <ul>
+        <li><a href="http://127.0.0.1:5002/">Login</a></li>
+        <li><a href="http://127.0.0.1:5002/signup">Sign Up</a></li>
+        <li><a href="movies.html">Movies</a></li>
+        <li><a href="subscriptions.html">Subscriptions</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Get the Best Movie Ticket Subscription Plans</h1>
+      <p>Enjoy exclusive features and seamless ticket booking experiences.</p>
+    </div>
+  </section>
+
+  <!-- Subscription Plans Section -->
+  <div class="container mt-5">
+    <h2 class="text-center">Choose Your Subscription Plan</h2>
+    <div class="row mt-4 justify-content-center">
+      <div class="col-md-3">
+        <div class="plan-card">
+          <h3 class="plan-title">Standard Plan</h3>
+          <ul class="plan-features">
+            <li>✔ 5 Tickets / Month</li>
+            <li>✔ Priority Support</li>
+            <li>Validity: 1 Month</li>
+          </ul>
+          <p class="plan-price">Price: ₹0</p>
+          <button class="btn btn-success" onclick="confirmPlan('Standard Plan', 0)">Select</button>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="plan-card">
+          <h3 class="plan-title">Premium Plan</h3>
+          <ul class="plan-features">
+            <li>✔ 15 Tickets</li>
+            <li>✔ Faster Booking</li>
+            <li>Validity: 3 Months</li>
+          </ul>
+          <p class="plan-price">Price: ₹250</p>
+          <button class="btn btn-success" onclick="confirmPlan('Premium Plan', 250)">Select</button>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="plan-card">
+          <h3 class="plan-title">VIP Plan</h3>
+          <ul class="plan-features">
+            <li>✔ 30 Tickets</li>
+            <li>✔ Premium Support</li>
+            <li>Validity: 6 Months</li>
+          </ul>
+          <p class="plan-price">Price: ₹500</p>
+          <button class="btn btn-success" onclick="confirmPlan('VIP Plan', 500)">Select</button>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="plan-card">
+          <h3 class="plan-title">Ultimate Plan</h3>
+          <ul class="plan-features">
+            <li>✔ Unlimited Tickets</li>
+            <li>✔ Exclusive Access</li>
+            <li>Validity: 12 Months</li>
+          </ul>
+          <p class="plan-price">Price: ₹1000</p>
+          <button class="btn btn-success" onclick="confirmPlan('Ultimate Plan', 1000)">Select</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- QR Code Section -->
+    <div id="qrContainer" class="qr-container text-center mt-5">
+      <h3>Scan to Pay</h3>
+      <canvas id="qrCode"></canvas>
+      <p class="mt-2" id="qrMessage"></p>
+      <button onclick="confirmPayment()" class="btn btn-primary mt-3">Confirm Payment</button>
+    </div>
+  </div>
+
+  <!-- Footer Section -->
+  <footer>
+    <p>© 2025 Spot My Seat. All Rights Reserved.</p>
+  </footer>
+
+  <script>
+    const UPI_ID = "9368535538@ptaxis";
+    let selectedAmount = 0;
+    let selectedPlanName = "";
+
+    function confirmPlan(planName, amount) {
+      const userConfirmed = confirm(`You have selected the ${planName} for ₹${amount}. Do you want to proceed?`);
+      if (userConfirmed) {
+        selectedAmount = amount;
+        selectedPlanName = planName;
+        generateQRCode();
+      }
+    }
+
+    function generateQRCode() {
+      if (!selectedAmount) {
+        alert("Please select a plan.");
+        return;
+      }
+
+      const upiLink = `upi://pay?pa=${UPI_ID}&pn=SpotMySeat&am=${selectedAmount}&cu=INR`;
+
+      document.getElementById("qrContainer").style.display = "block";
+      document.getElementById("qrMessage").innerText = `Payment Amount: ₹${selectedAmount} for ${selectedPlanName}`;
+
+      QRCode.toCanvas(document.getElementById("qrCode"), upiLink, { width: 200 }, function (error) {
+        if (error) console.error(error);
+      });
+    }
+
+    function confirmPayment() {
+      if (!selectedAmount) {
+        alert("No payment made. Please scan the QR code first.");
+        return;
+      }
+
+      alert("Payment confirmed. Thank you for subscribing!");
+    }
+  </script>
+</body>
+</html>

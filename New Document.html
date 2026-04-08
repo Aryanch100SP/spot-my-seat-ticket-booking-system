@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Movie Ticket Booking</title>
+  <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css">
+  <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+</head>
+<body>
+  <h1>Movie Ticket Booking</h1>
+  <p>OFF on Wednesdays</p>
+  <input type="text" id="date-input" placeholder="Enter date (DD MM YYYY)"><br><br>
+  <input type="text" id="name-input" placeholder="Enter name"><br><br>
+  <input type="text" id="contact-input" placeholder="Enter contact number"><br><br>
+  <select id="movie-select">
+    <option value="1">Bhool Bhulaiyaa 3D</option>
+    <option value="2">Ghazini 2</option>
+    <option value="3">Higher</option>
+    <option value="4">Raone 2</option>
+  </select><br><br>
+  <input type="number" id="quantity-input" placeholder="Enter quantity"><br><br>
+  <button id="book-tickets">Book Tickets</button>
+  <p id="day-output"></p>
+  <p id="price-output"></p>
+
+  <py-script>
+    from js import document
+    from datetime import datetime
+
+    def find_day(date_str):
+      date_obj = datetime.strptime(date_str, '%d %m %Y')
+      return date_obj.strftime('%A')
+
+    def handle_booking(event):
+      date = document.getElementById("date-input").value
+      name = document.getElementById("name-input").value
+      contact = document.getElementById("contact-input").value
+      movie = document.getElementById("movie-select").value
+      quantity = int(document.getElementById("quantity-input").value)
+
+      day_of_week = find_day(date)
+      document.getElementById("day-output").innerHTML = f"The day of the week for {date} is: {day_of_week}"
+
+      prices = {
+        "Monday": 170,
+        "Tuesday": 170,
+        "Wednesday": "Off Day",
+        "Thursday": 220,
+        "Friday": 300,
+        "Saturday": 300,
+        "Sunday": 320
+      }
+
+      movie_prices = {
+        "1": 2.5,  # Bhool Bhulaiyaa 3D
+        "2": 1.5,  # Ghazini 2
+        "3": 2.0,  # Higher
+        "4": 2.5   # Raone 2
+      }
+
+      if day_of_week == "Wednesday":
+        document.getElementById("price-output").innerHTML = "Sorry, no bookings on Wednesdays."
+        return
+
+      ticket_price = quantity * prices[day_of_week] * movie_prices[movie]
+      document.getElementById("price-output").innerHTML = f"Ticket price: ₹ {ticket_price}"
+
+      confirmation = window.confirm("Confirm Booking?")
+      if confirmation:
+        document.getElementById("price-output").innerHTML += f"<br>Congrats, {name}! Your tickets for {movie} on {date} are booked. See you at the movies!"
+      else:
+        document.getElementById("price-output").innerHTML += "<br>Booking cancelled."
+
+    book_tickets_btn = document.getElementById("book-tickets")
+    book_tickets_btn.addEventListener("click", handle_booking)
+  </py-script>
+</body>
+</html>

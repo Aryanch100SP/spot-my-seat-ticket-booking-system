@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Ticket Booking</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+
+        label,
+        input,
+        select,
+        button {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #qrcode {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Movie Ticket Booking Form</h2>
+
+    <label for="date">Enter Booking Date:</label>
+    <input type="date" id="date">
+
+    <label for="name">Enter Your Name:</label>
+    <input type="text" id="name" readonly>
+
+    <label for="phone">Enter Your Mobile No.:</label>
+    <input type="tel" id="phone">
+
+    <label for="movie">Select Movie:</label>
+    <select id="movie">
+        <option value="Bhool Bhulaiyaa 3D">Bhool Bhulaiyaa 3D</option>
+        <option value="Ghazini 2">Ghazini 2</option>
+        <option value="Higher">Higher</option>
+        <option value="Raone 2">Raone 2</option>
+    </select>
+
+    <label for="time">Select Show Time:</label>
+    <select id="time">
+        <option value="10:00 AM">10:00 AM</option>
+        <option value="1:00 PM">1:00 PM</option>
+        <option value="4:00 PM">4:00 PM</option>
+        <option value="7:00 PM">7:00 PM</option>
+    </select>
+
+    <label for="quantity">No. of People:</label>
+    <input type="number" id="quantity" min="1">
+
+    <button onclick="bookTicket()">Book Ticket</button>
+
+    <div id="result"></div>
+    <div id="qrcode"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <script>
+        // Retrieve and prefill user data from previous pages
+        document.addEventListener("DOMContentLoaded", () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userName = urlParams.get("name");
+            const selectedMovie = urlParams.get("movie");
+            const seatNumber = urlParams.get("seat");
+
+            if (userName) {
+                document.getElementById("name").value = userName;
+            }
+
+            if (selectedMovie) {
+                document.getElementById("movie").value = selectedMovie;
+            }
+        });
+
+        function bookTicket() {
+            const date = document.getElementById("date").value;
+            const name = document.getElementById("name").value;
+            const phone = document.getElementById("phone").value;
+            const movieChoice = document.getElementById("movie").value;
+            const selectedTime = document.getElementById("time").value;
+            const quantity = document.getElementById("quantity").value;
+
+            if (!date || !name || !phone || !quantity || !movieChoice || !selectedTime) {
+                alert("Please fill in all the details.");
+                return;
+            }
+
+            const amount = quantity * 150; // Example: ₹150 per ticket
+
+            document.getElementById("result").innerHTML = `
+                <p>Congrats, ${name}! Your tickets have been booked.</p>
+                <p>Movie: ${movieChoice}</p>
+                <p>Time: ${selectedTime}</p>
+                <p>Total Amount: ₹${amount.toFixed(2)}</p>
+                <p>Scan the QR code below to pay:</p>
+            `;
+
+            const upiUrl = `upi://pay?pa=9368535538@pyaxis&pn=${encodeURIComponent(name)}&am=${amount.toFixed(2)}&cu=INR`;
+
+            // Generate QR code
+            const qrcode = new QRCode(document.getElementById("qrcode"), {
+                text: upiUrl,
+                width: 128,
+                height: 128
+            });
+
+            // Generate receipt content
+            const receiptContent = `Movie Ticket Receipt\n\n` +
+                `Name: ${name}\n` +
+                `Phone: ${phone}\n` +
+                `Movie: ${movieChoice}\n` +
+                `Date: ${date}\n` +
+                `Show Time: ${selectedTime}\n` +
+                `Number of Tickets: ${quantity}\n` +
+                `Total Amount: ₹${amount.toFixed(2)}\n`;
+
+            // Create and download the receipt file
+            const blob = new Blob([receiptContent], { type: "text/plain" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "Movie_Ticket_Receipt.txt";
+            link.click();
+        }
+    </script>
+
+</body>
+
+</html>

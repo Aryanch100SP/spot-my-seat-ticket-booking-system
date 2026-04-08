@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Form - Spot My Seat</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #141415;
+            color: #333;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1, h2 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        p {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        form {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #5a67d8;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #4348b8;
+        }
+
+        #qr-code {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .billing-details {
+            text-align: left;
+            margin: 15px 0;
+        }
+
+        .receipt {
+            text-align: left;
+            margin-top: 20px;
+            background: #f1f1f1;
+            padding: 15px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Confirm Your Booking</h1>
+
+        <h2>Booking Details</h2>
+        <div class="billing-details">
+            <p id="user-name-display"></p>
+            <p id="selected-movie"></p>
+            <p id="selected-theater"></p>
+            <p id="selected-time"></p>
+            <p id="ticket-amount"></p>
+            <p id="gst-amount"></p>
+            <p id="final-amount"></p>
+        </div>
+
+        <div id="qr-code"></div>
+
+        <form id="booking-form">
+            <label for="user-name-input">Name</label>
+            <input type="text" id="user-name-input" name="username" placeholder="Enter your name">
+
+            <label for="contact-no-input">Contact Number</label>
+            <input type="tel" id="contact-no-input" name="contact" placeholder="Enter your contact number">
+
+            <button type="submit">Confirm Booking</button>
+        </form>
+
+        <div id="receipt" class="receipt" style="display: none;"></div>
+    </div>
+
+    <script>
+        const GST_RATE = 0.18; // 18% GST
+
+        // Fetch data from localStorage
+        const userName = localStorage.getItem('userName');
+        const selectedMovie = localStorage.getItem('selectedMovie');
+        const selectedTime = localStorage.getItem('selectedTime');
+        const selectedTheater = localStorage.getItem('selectedTheater');
+        const previousAmount = localStorage.getItem('totalCost');
+
+        // Update booking details
+        document.getElementById('user-name-display').textContent = userName ? `Name: ${userName}` : '';
+        document.getElementById('selected-movie').textContent = selectedMovie ? `Movie: ${selectedMovie}` : '';
+        document.getElementById('selected-theater').textContent = selectedTheater ? `Theater: ${selectedTheater}` : '';
+        document.getElementById('selected-time').textContent = selectedTime ? `Showtime: ${selectedTime}` : '';
+
+        let totalAmount = 0;
+
+        // Override amount if totalCost exists
+        if (previousAmount !== null) {
+            totalAmount = parseFloat(previousAmount);
+            document.getElementById('ticket-amount').textContent = `Base Amount: ₹${totalAmount}`;
+        }
+
+        // Calculate GST and final amount
+        const gstAmount = totalAmount * GST_RATE;
+        const finalAmount = totalAmount + gstAmount;
+
+        document.getElementById('gst-amount').textContent = `GST (18%): ₹${gstAmount.toFixed(2)}`;
+        document.getElementById('final-amount').textContent = `Final Amount: ₹${finalAmount.toFixed(2)}`;
+
+        let bookingReference = "";
+
+        function generateBookingReference() {
+            return 'REF-' + Math.floor(100000 + Math.random() * 900000);
+        }
+
+        function downloadReceipt(textContent, filename) {
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(textContent));
+            element.setAttribute('download', filename);
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+
+        // Handle form submission
+        document.getElementById('booking-form').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const enteredName = document.getElementById('user-name-input').value.trim();
+            const contactNumber = document.getElementById('contact-no-input').value.trim();
+
+            if (!enteredName) {
+                alert("Please enter a valid name.");
+                return;
+            }
+
+            if (!contactNumber) {
+                alert("Please enter a valid contact number.");
+                return;
+            }
+
+            bookingReference = generateBookingReference();
+
+            const receiptText = `Booking Receipt\n\nBooking Reference: ${bookingReference}\nName: ${enteredName}\nContact Number: ${contactNumber}\nMovie: ${selectedMovie}\nTheater: ${selectedTheater}\nShowtime: ${selectedTime}\nBase Amount: ₹${totalAmount.toFixed(2)}\nGST (18%): ₹${gstAmount.toFixed(2)}\nTotal Paid: ₹${finalAmount.toFixed(2)}`;
+
+            // Show booking receipt
+            const receiptDiv = document.getElementById('receipt');
+            receiptDiv.style.display = 'block';
+            receiptDiv.innerHTML = `
+                <h3>Booking Receipt</h3>
+                <p><strong>Booking Reference:</strong> ${bookingReference}</p>
+                <p><strong>Name:</strong> ${enteredName}</p>
+                <p><strong>Contact Number:</strong> ${contactNumber}</p>
+                <p><strong>Movie:</strong> ${selectedMovie}</p>
+                <p><strong>Theater:</strong> ${selectedTheater}</p>
+                <p><strong>Showtime:</strong> ${selectedTime}</p>
+                <p><strong>Base Amount:</strong> ₹${totalAmount.toFixed(2)}</p>
+                <p><strong>GST (18%):</strong> ₹${gstAmount.toFixed(2)}</p>
+                <p><strong>Total Paid:</strong> ₹${finalAmount.toFixed(2)}</p>
+            `;
+
+            alert(`Booking confirmed! Reference: ${bookingReference}`);
+            downloadReceipt(receiptText, `BookingReceipt_${bookingReference}.txt`);
+            localStorage.clear(); // Clear stored data
+
+            // Generate QR code for payment
+            if (finalAmount > 0) {
+                const paymentUrl = `upi://pay?pa=9368535538@ptaxis&pn=SpotMySeat&am=${finalAmount}&cu=INR`;
+                QRCode.toCanvas(document.createElement('canvas'), paymentUrl, function (error, canvas) {
+                    if (error) {
+                        console.error(error);
+                        return;
+                    }
+                    const qrContainer = document.getElementById('qr-code');
+                    qrContainer.innerHTML = ''; // Clear previous QR code
+                    qrContainer.appendChild(canvas);
+                    console.log('QR Code generated successfully');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+

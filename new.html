@@ -1,0 +1,199 @@
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="rgb-text">Movie Ticket Booking</h1>
+        </div>
+          <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="subscriptions.html">Subscriptions</a></li>
+                <li><a href="admin.html">Admin</a></li>
+            </ul>
+        </nav>
+    </section>
+
+ 
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"],
+        input[type="tel"],
+        select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            width: 200px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <label for="date">Enter Booking Date (DD MM YYYY):</label>
+    <input type="text" id="date" name="date"><br><br>
+
+    <label for="name">Enter Your Name:</label>
+    <input type="text" id="name" name="name"><br><br>
+
+    <label for="phone">Enter Your Mobile No.:</label>
+    <input type="tel" id="phone" name="phone"><br><br>
+
+    <label for="movie">Select Movie:</label>
+    <select id="movie">
+        <option value="1">Bhool Bhulaiyaa 3D (10:00 AM, 1:00 PM, 4:00 PM, 7:00 PM)</option> 
+        <option value="2">Ghazini 2 (11:00 AM, 2:00 PM, 5:00 PM, 8:00 PM)</option> 
+        <option value="3">Higher (12:00 PM, 3:00 PM, 6:00 PM, 9:00 PM)</option>
+        <option value="4">Raone 2 (1:00 PM, 4:00 PM, 7:00 PM, 10:00 PM)</option>
+    </select><br><br>
+    
+       
+
+    <label for="time">Select Show Time:</label>
+    <select id="time">
+        <option value="10:00 AM">10:00 AM</option>
+        <option value="1:00 PM">1:00 PM</option>
+        <option value="2:00 PM">2:00 PM</option>
+        <option value="3:00 PM">3:00 PM</option>
+        <option value="4:00 PM">4:00 PM</option>
+        <option value="6:00 PM">6:00 PM</option>
+        <option value="7:00 PM">7:00 PM</option>
+        <option value="8:00 PM">8:00 PM</option>
+        <option value="9:00 PM">9:00 PM</option>
+        <option value="10:00 PM">10:00 PM</option>
+    </select><br><br>
+
+    <label for="seats">Select Seats (e.g., A1, B2, C3):</label>
+    <input type="text" id="seats" name="seats"><br><br>
+
+    <label for="quantity">No. of People:</label>
+    <input type="number" id="quantity" name="quantity" min="1"><br><br>
+
+    <button onclick="bookTicket()">Book Ticket</button>
+
+    <div id="result"></div>
+
+    <script>
+        function bookTicket() {
+            const dateInput = document.getElementById("date").value;
+            const name = document.getElementById("name").value;
+            const contactNo = document.getElementById("phone").value;
+            const movieChoice = document.getElementById("movie").value;
+            const selectedTime = document.getElementById("time").value;
+            const selectedSeats = document.getElementById("seats").value;
+            const quantity = parseInt(document.getElementById("quantity").value); 
+
+            const moviePrices = {
+                "Monday": 170,
+                "Tuesday": 170,
+                "Wednesday": 0, // Set Wednesday price to 0
+                "Thursday": 220,
+                "Friday": 300,
+                "Saturday": 300,
+                "Sunday": 320
+            };
+
+            function findDay(date) {
+                const [day, month, year] = date.split(' ').map(Number);
+                const dateObj = new Date(year, month - 1, day);
+                const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                return days[dateObj.getDay()];
+            }
+
+            const dayOfWeek = findDay(dateInput);
+
+            let multiplier;
+            switch (movieChoice) {
+                case "1": // Bhool Bhulaiyaa 3D
+                    multiplier = 2.5;
+                    break;
+                case "2": // Ghazini 2
+                    multiplier = 1.5;
+                    break;
+                case "3": // Higher
+                    multiplier = 2;
+                    break;
+                case "4": // Raone 2
+                    multiplier = 2.5;
+                    break;
+                default:
+                    alert("Invalid movie choice");
+                    return; 
+            }
+
+            if (dayOfWeek === "Wednesday") {
+                alert("Sorry, no bookings allowed on Wednesdays");
+            } else {
+                const ticketPrice = moviePrices[dayOfWeek];
+                const amount = quantity * ticketPrice * multiplier;
+
+                const resultDiv = document.getElementById("result");
+                resultDiv.innerHTML = `
+                    <p>Congrats, ${name}! Your tickets have been booked.</p>
+                    <p>Movie: ${movieChoice}</p>
+                    <p>Time: ${selectedTime}</p>
+                    <p>Seats: ${selectedSeats}</p>
+                    <p>Total Amount: ₹${amount.toFixed(2)}</p>
+                    <p>Please pay ₹${amount.toFixed(2)} to UPI ID: 9368535538@ptaxis</p>
+                    <p>You can scan the following QR code to pay:</p>
+                    <p>Your Booking ID: 
+                        <span id="bookingId">${Math.floor(100000 + Math.random() * 900000)}</span> 
+                    </p> 
+                `;
+
+                // Download functionality
+                const fileContent = `
+                    Booking Details:
+
+                    Name: ${name}
+                    Phone: ${contactNo}
+                    Date: ${dateInput}
+                    Movie: ${movieChoice}
+                    Time: ${selectedTime}
+                    Seats: ${selectedSeats}
+                    Quantity: ${quantity}
+                    Ticket Price: ₹${(ticketPrice * multiplier).toFixed(2)}
+                    Total Amount: ₹${amount.toFixed(2)}
+                    Booking ID: ${Math.floor(100000 + Math.random() * 900000)} 
+                `;
+
+             const a = document.createElement('a');
+            const blob = new Blob([fileContent], { type: 'text/plain' });
+            a.href = URL.createObjectURL(blob);
+            a.download = 'booking_details.txt';
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }
+
+            }
+        }
+    </script>
+</body>
+</html>

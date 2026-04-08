@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movies - Spot My Seat</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .movie-card img {
+            cursor: pointer;
+        }
+
+        .theater-info {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        .theater-name {
+            font-weight: bold;
+        }
+
+        .showtimes {
+            margin-top: 5px;
+        }
+
+        .showtime {
+            display: inline-block;
+            margin-right: 10px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .showtime:hover {
+            background-color: #f0f0f0;
+        }
+
+        .map-button {
+            display: inline-block;
+            margin-left: 10px;
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Explore Movies</h1>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="subscription.html">Subscriptions</a></li>
+                <li><a href="admin.html">Admin</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <h2>Available Movies</h2>
+        <div id="movies-list"></div>
+        <label for="show-date">Select Date:</label>
+        <input type="date" id="show-date" name="show-date">
+    </main>
+
+    <section class="movies-container">
+        <div class="movie-card">
+            <h2>Avengers: EndGame</h2>
+            <img src="D:\Mini P\endgame pic.jpg" alt="Movie 1" data-movie="Avengers: EndGame">
+        </div>
+
+        <div class="movie-card">
+            <h2>Luka Chuppi 2</h2>
+            <img src="D:\Mini P\lc 2.png" alt="Movie 2" data-movie="Luka Chuppi 2">
+        </div>
+
+        <div class="movie-card">
+            <h2>Higer</h2>
+            <img src="D:\Mini P\higer.png" alt="Movie 3" data-movie="Higer">
+        </div>
+
+        <div class="movie-card">
+            <h2>Raone</h2>
+            <img src="D:\Mini P\Raone.jpg" alt="Movie 4" data-movie="Raone">
+        </div>
+    </section>
+
+    <div id="theater-info-container" style="display:none;"></div>
+
+    <script>
+        const movieImages = document.querySelectorAll('.movie-card img');
+        const theaterInfoContainer = document.getElementById('theater-info-container');
+        const dateInput = document.getElementById('show-date');
+
+        let selectedDate = '';
+        let selectedDay = '';
+        const ticketPrices = {
+            "Monday": 170,
+            "Tuesday": 170,
+            "Wednesday": "Off Day",
+            "Thursday": 220,
+            "Friday": 300,
+            "Saturday": 300,
+            "Sunday": 320
+        };
+
+        dateInput.addEventListener('change', () => {
+            const dateValue = dateInput.value;
+            const dateObj = new Date(dateValue);
+
+            if (!isNaN(dateObj)) {
+                selectedDate = dateValue;
+                selectedDay = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+                console.log(`Selected Date: ${selectedDate}, Day: ${selectedDay}`);
+
+                const price = ticketPrices[selectedDay];
+                if (price === "Off Day") {
+                    alert("Sorry, no shows available on Wednesdays.");
+                } else {
+                    localStorage.setItem('selectedDay', selectedDay);
+                    localStorage.setItem('ticketPrice', price);
+                }
+            } else {
+                alert('Please select a valid date.');
+            }
+        });
+
+        const theaterData = {
+            "Avengers: EndGame": [
+                { name: "PVR Cinemas, Select Citywalk", showtimes: ["10:00 AM", "1:00 PM", "4:00 PM"], location: { lat: 28.5258, lng: 77.2089 } },
+                { name: "INOX, Nehru Place", showtimes: ["11:00 AM", "2:00 PM", "7:00 PM"], location: { lat: 28.5528, lng: 77.2582 } },
+                { name: "Miraj Cinemas, Hauz Khas", showtimes: ["10:00 AM", "3:00 PM", "8:00 PM"], location: { lat: 28.5494, lng: 77.2016 } },
+                { name: "DT Cinemas, Saket", showtimes: ["12:00 PM", "5:00 PM", "9:00 PM"], location: { lat: 28.5196, lng: 77.2183 } }
+            ],
+            "Luka Chuppi 2": [
+                { name: "Wave Cinemas, Noida", showtimes: ["10:00 AM", "1:00 PM", "4:00 PM"], location: { lat: 28.5629, lng: 77.3261 } },
+                { name: "Carnival Cinemas, Ghaziabad", showtimes: ["11:00 AM", "2:00 PM", "7:00 PM"], location: { lat: 28.6789, lng: 77.4560 } },
+                { name: "PVR Cinemas, Logix Mall", showtimes: ["10:30 AM", "3:30 PM", "6:30 PM"], location: { lat: 28.5682, lng: 77.3207 } },
+                { name: "INOX, Gardens Galleria", showtimes: ["1:00 PM", "4:30 PM", "8:00 PM"], location: { lat: 28.5678, lng: 77.3223 } }
+            ],
+            "Higer": [
+                { name: "PVR Cinemas, Vegas Mall", showtimes: ["10:00 AM", "1:00 PM", "4:00 PM"], location: { lat: 28.5898, lng: 77.4100 } },
+                { name: "Big Cinemas, Greater Noida", showtimes: ["11:00 AM", "2:00 PM", "7:00 PM"], location: { lat: 28.4821, lng: 77.5069 } },
+                { name: "MovieTime Cinemas, Rohini", showtimes: ["12:30 PM", "3:30 PM", "6:30 PM"], location: { lat: 28.7207, lng: 77.1234 } },
+                { name: "Silver City Cinemas, Ghaziabad", showtimes: ["10:15 AM", "2:15 PM", "7:15 PM"], location: { lat: 28.6679, lng: 77.4399 } }
+            ],
+            "Raone": [
+                { name: "Movie Time Cinemas, Faridabad", showtimes: ["10:00 AM", "1:00 PM", "4:00 PM"], location: { lat: 28.4385, lng: 77.3100 } },
+                { name: "SRS Cinemas, Gurgaon", showtimes: ["11:00 AM", "2:00 PM", "7:00 PM"], location: { lat: 28.4595, lng: 77.0266 } },
+                { name: "PVR Cinemas, Ambience Mall", showtimes: ["10:30 AM", "2:30 PM", "6:30 PM"], location: { lat: 28.5046, lng: 77.0954 } },
+                { name: "Rajhans Cinemas, Palam Vihar", showtimes: ["12:00 PM", "4:00 PM", "9:00 PM"], location: { lat: 28.4973, lng: 77.0379 } }
+            ]
+        };
+
+        movieImages.forEach(img => {
+            img.addEventListener('click', () => {
+                const movieName = img.dataset.movie;
+                const theaters = theaterData[movieName];
+
+                if (theaters) {
+                    theaterInfoContainer.innerHTML = "";
+                    theaters.forEach(theater => {
+                        const theaterDiv = document.createElement('div');
+                        theaterDiv.classList.add('theater-info');
+                        theaterDiv.innerHTML = `
+                            <div class="theater-name">${theater.name}</div>
+                            <div class="showtimes">Showtimes: ${theater.showtimes.map(time => `<span class="showtime">${time}</span>`).join('')}</div>
+                            <button class="map-button" onclick="openMap(${theater.location.lat}, ${theater.location.lng}, '${theater.name}')">View on Map</button>
+                        `;
+
+                        theaterInfoContainer.appendChild(theaterDiv);
+
+                        const showtimeSpans = theaterDiv.querySelectorAll('.showtime');
+                        showtimeSpans.forEach(span => {
+                            span.addEventListener('click', () => {
+                                if (!selectedDate) {
+                                    alert('Please select a date first.');
+                                    return;
+                                }
+                                console.log(`Selected showtime: ${span.textContent}`);
+                                localStorage.setItem('selectedMovie', movieName);
+                                localStorage.setItem('selectedTime', span.textContent);
+                                localStorage.setItem('selectedTheater', theater.name);
+                                localStorage.setItem('selectedDate', selectedDate);
+                                window.location.href = 'seat_selection.html';
+                            });
+                        });
+                    });
+
+                    theaterInfoContainer.style.display = "block";
+                } else {
+                    theaterInfoContainer.innerHTML = "<p>No showtimes found for this movie.</p>";
+                    theaterInfoContainer.style.display = "block";
+                }
+            });
+        });
+
+        function openMap(lat, lng, theaterName) {
+            const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(theaterName)}`;
+            window.open(mapUrl, '_blank');
+        }
+    </script>
+</body>
+
+</html>
